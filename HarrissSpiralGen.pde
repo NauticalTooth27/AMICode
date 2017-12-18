@@ -1,44 +1,44 @@
-float ratioA = 0.56984;
-float ratioB = 0.43016;
-int iter = 8;
+/*
+ * Author: Ryan Polhemus
+ * Creates a Harriss spiral with a set number of iterations
+ * Each iteration takes a rectangle with a ratio of 1.32472 between its sides, and divides it into two similar rectangles and a square
+ * The arcs are drawn inside of the squares, to the bordering "blue" rectangles 
+ * (the blue rectangle is the vertical one in the first iteration, and the orange one is the horizontal one, visible if you turn on squares)
+ * Inspiration from this thread: http://community.wolfram.com/groups/-/m/t/430342
+ */
+
+float ratioA = 0.56984; //Ratio of blue section to whole side
+float ratioB = 0.43016; //Ratio of orange section to whole side
+int iter = 5; 
 
 void setup()
 {
   colorMode(RGB);
-  size(2500,2500);
+  size(1400,1500);
   background(200,200,200);
-  HarrissSpiral(iter, true);
+  boolean showSquares = true;
+  HarrissSpiral(0, showSquares); 
 }
 
-void draw()
+void HarrissSpiral(int rep, boolean squares)
 {
+  int scale = 5; //Scale of fractal
+  PVector upperLeft = new PVector(100,100); //Starting upper left corner of fractal
+  translate(upperLeft.x,upperLeft.y);       //All iterations start with origin centered at top left of box
   
+  HarrissSpiralStep(new PVector(0,0), new PVector((232.4718 * scale), (175.4878 * scale)), rep, squares);
 }
 
-void HarrissSpiral(int eps, boolean squares)
+void HarrissSpiralStep(PVector p, PVector q, int rep, boolean squares)
 {
-  int scale = 8;
-  PVector upperLeft = new PVector(100,100);
-  translate(upperLeft.x,upperLeft.y);
-  
-  HarrissSpiralStep(new PVector(0,0), new PVector((232.4718 * scale), (175.4878 * scale)), eps, squares);
-  //println("seconds");
-  //HarrissSpiralStep(new PVector(upperRight.x, upperRight.y + 300), new PVector(upperRight.x+232.4718, upperRight.y + 475.4878), 1);
-}
-
-void HarrissSpiralStep(PVector p, PVector q, int eps, boolean squares)
-{
-  //if(p.dist(q) > eps)
-  if(eps > 0)
+  //if(p.dist(q) > rep) //Other option for base case -> distance between vectors.. untested, should work in theory
+  if(rep < iter)
   {
-    eps--;
     float xLength = q.x-p.x;
     float yLength = q.y-p.y;
     
-    float blueShort, orangeShort = 0; //Initializing here, will always be changed in if/else
-    
-    blueShort = xLength * ratioA; //Terrible name, to change => short side of blue rect 
-    orangeShort = yLength * ratioB; //Worse name, to change => short side of orange rect
+    float blueShort = xLength * ratioA; //Short side of blue rectangle
+    float orangeShort = yLength * ratioB; //Short side of orange rectangle
     
     if(squares)
     {
@@ -48,11 +48,12 @@ void HarrissSpiralStep(PVector p, PVector q, int eps, boolean squares)
       fill(0,0,255);
       rect(p.x,p.y,blueShort,yLength); //Fill blue rectangle
       
+      
       fill(255,184,0);
       rect(p.x+blueShort, p.y, xLength-blueShort, orangeShort); //Fill orange rectangle
     }
     
-    if(eps != iter - 1)
+    if(rep != 0)
     {
       //Generate quarter circle
       noFill();
@@ -67,13 +68,14 @@ void HarrissSpiralStep(PVector p, PVector q, int eps, boolean squares)
       strokeWeight(1);
     }
     
-    println("bs: " + blueShort);
-    translate(blueShort, 0);
-    HarrissSpiralStep(new PVector(p.x, p.y), new PVector(q.x-blueShort,p.y+orangeShort), eps, squares);
-    translate(-blueShort,yLength);
-    rotate(-PI/2);
-    HarrissSpiralStep(new PVector(0,0), new PVector(yLength, blueShort), eps, squares); //Inside blue rect
-    rotate(PI/2);
+    rep++; //Incrementing before recursing
+    
+    translate(blueShort, 0); //Move origin to upper left of orange box
+    HarrissSpiralStep(new PVector(p.x, p.y), new PVector(q.x-blueShort,p.y+orangeShort), rep, squares); //Next iteration for orange box
+    translate(-blueShort,yLength);                                                                      //Move origin to bottom left of blue box, after rotation to be upper right
+    rotate(-PI/2);                                                                                      //Rotate coordinate system, so origin is now in the upper left of blue box
+    HarrissSpiralStep(new PVector(0,0), new PVector(yLength, blueShort), rep, squares);                 //Next iteration for blue box
+    rotate(PI/2);                                                                                       //Here down resets coordinate system
     translate(blueShort,-yLength);
     translate(-blueShort, 0);
   }
