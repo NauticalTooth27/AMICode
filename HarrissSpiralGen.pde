@@ -9,15 +9,39 @@
 
 float ratioA = 0.56984; //Ratio of blue section to whole side
 float ratioB = 0.43016; //Ratio of orange section to whole side
-int iter = 5; 
+int iter = 1; 
+
+//Edit these
+int maxIter = 12;
+int iterTime = 1500;
+boolean showSquares = true;
+color backgroundColor   = color(255, 255, 255); //white; default 255, 255, 255
+color majorColor        = color(0, 0, 255); //blue; default 0, 0, 255
+color minorColor        = color(255, 184, 0); //orange; default 255, 184, 0
 
 void setup()
 {
   colorMode(RGB);
   size(1400,1500);
   background(200,200,200);
-  boolean showSquares = true;
-  HarrissSpiral(0, showSquares); 
+  //HarrissSpiral(0, showSquares); 
+}
+
+void draw()
+{
+  if(iter < maxIter)
+  {
+    HarrissSpiral(1, showSquares);
+    waitTime(iterTime);
+    iter++;
+    print(iter);
+  }
+}
+
+void waitTime(int mSecs)
+{
+  int start = millis();
+  while(millis() < start + mSecs){}
 }
 
 void HarrissSpiral(int rep, boolean squares)
@@ -42,14 +66,14 @@ void HarrissSpiralStep(PVector p, PVector q, int rep, boolean squares)
     
     if(squares)
     {
-      fill(255,255,255);
+      fill(backgroundColor);
       rect(p.x,p.y,xLength,yLength); //Fill entire current rectangle white
       
-      fill(0,0,255);
+      fill(majorColor);
       rect(p.x,p.y,blueShort,yLength); //Fill blue rectangle
       
       
-      fill(255,184,0);
+      fill(minorColor);
       rect(p.x+blueShort, p.y, xLength-blueShort, orangeShort); //Fill orange rectangle
     }
     
